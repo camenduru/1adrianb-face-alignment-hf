@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import argparse
 import functools
+import os
 import pathlib
 import subprocess
 
-subprocess.call('pip uninstall -y opencv-python'.split())
-subprocess.call('pip uninstall -y opencv-python-headless'.split())
-subprocess.call('pip install opencv-python-headless==4.5.5.62'.split())
+if os.environ.get('SYSTEM') == 'spaces':
+    subprocess.call('pip uninstall -y opencv-python'.split())
+    subprocess.call('pip uninstall -y opencv-python-headless'.split())
+    subprocess.call('pip install opencv-python-headless==4.5.5.62'.split())
 
 import cv2
 import face_alignment
@@ -49,8 +51,12 @@ def detect(
 
     res = image.copy()
     for pts in preds:
+        tl = pts.min(axis=0)
+        br = pts.max(axis=0)
+        size = (br - tl).max()
+        radius = max(2, int(3 * size / 256))
         for pt in np.round(pts).astype(int):
-            cv2.circle(res, tuple(pt), 2, (0, 255, 0), cv2.FILLED)
+            cv2.circle(res, tuple(pt), radius, (0, 255, 0), cv2.FILLED)
     return res
 
 
