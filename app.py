@@ -21,7 +21,7 @@ import torch
 
 ORIGINAL_REPO_URL = 'https://github.com/1adrianb/face-alignment'
 TITLE = '1adrianb/face-alignment'
-DESCRIPTION = f'A demo for {ORIGINAL_REPO_URL}'
+DESCRIPTION = f'This is an unofficial demo for {ORIGINAL_REPO_URL}.'
 ARTICLE = ''
 
 
