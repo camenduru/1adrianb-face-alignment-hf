@@ -19,9 +19,8 @@ import gradio as gr
 import numpy as np
 import torch
 
-ORIGINAL_REPO_URL = 'https://github.com/1adrianb/face-alignment'
 TITLE = '1adrianb/face-alignment'
-DESCRIPTION = f'This is an unofficial demo for {ORIGINAL_REPO_URL}.'
+DESCRIPTION = 'This is an unofficial demo for https://github.com/1adrianb/face-alignment.'
 ARTICLE = '<center><img src="https://visitor-badge.glitch.me/badge?page_id=hysts.1adrianb-face-alignment" alt="visitor badge"/></center>'
 
 
