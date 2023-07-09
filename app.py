@@ -3,14 +3,7 @@
 from __future__ import annotations
 
 import functools
-import os
 import pathlib
-import subprocess
-
-if os.environ.get('SYSTEM') == 'spaces':
-    subprocess.call('pip uninstall -y opencv-python'.split())
-    subprocess.call('pip uninstall -y opencv-python-headless'.split())
-    subprocess.call('pip install opencv-python-headless==4.5.5.62'.split())
 
 import cv2
 import face_alignment
@@ -19,7 +12,9 @@ import numpy as np
 import torch
 
 TITLE = 'face-alignment'
-DESCRIPTION = 'This is an unofficial demo for https://github.com/1adrianb/face-alignment.'
+DESCRIPTION = 'https://github.com/1adrianb/face-alignment'
+
+MAX_IMAGE_SIZE = 1800
 
 
 def detect(
@@ -27,12 +22,14 @@ def detect(
     detector,
     device: torch.device,
 ) -> np.ndarray:
-    preds = detector.get_landmarks(image)
-    if len(preds) == 0:
-        raise RuntimeError('No face was found')
+    landmarks, _, boxes = detector.get_landmarks(image, return_bboxes=True)
+    if landmarks is None:
+        return image
 
     res = image.copy()
-    for pts in preds:
+    for pts, box in zip(landmarks, boxes):
+        box = np.round(box[:4]).astype(int)
+        cv2.rectangle(res, tuple(box[:2]), tuple(box[2:]), (0, 255, 0), 2)
         tl = pts.min(axis=0)
         br = pts.max(axis=0)
         size = (br - tl).max()
@@ -43,18 +40,18 @@ def detect(
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-detector = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D,
+detector = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D,
                                         device=device.type)
-func = functools.partial(detect, detector=detector, device=device)
+fn = functools.partial(detect, detector=detector, device=device)
 
 image_paths = sorted(pathlib.Path('images').glob('*.jpg'))
 examples = [[path.as_posix()] for path in image_paths]
 
 gr.Interface(
-    fn=func,
+    fn=fn,
     inputs=gr.Image(label='Input', type='numpy'),
     outputs=gr.Image(label='Output', type='numpy'),
     examples=examples,
     title=TITLE,
     description=DESCRIPTION,
-).launch(show_api=False)
+).queue().launch()
